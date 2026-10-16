@@ -1,0 +1,33 @@
+name: Veraxiv sandbox workload
+on:
+  push:
+    branches: [sandbox/provenance-check]
+permissions:
+  contents: read
+concurrency:
+  group: veraxiv-sandbox-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  ci:
+    name: Veraxiv sandbox CI
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - run: node --version
+      - run: node --test sandbox/ci.test.mjs
+      - run: node sandbox/build.mjs sandbox/SCENARIO.md dist
+      - run: git diff --check
+  qa:
+    name: Veraxiv sandbox QA
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - run: node --test sandbox/qa.test.mjs
